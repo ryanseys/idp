@@ -1,0 +1,33 @@
+extends layout
+
+block content
+  script(src="https://login.persona.org/authentication_api.js")
+  script.
+    function getAccessToken() {
+      try {
+        return location.href.match(/access_token=(\S*)&/)[1];
+      }
+      catch(err) {
+        return null;
+      }
+    }
+
+    function onLoadJSONP(j) {
+      if(j.email == email) {
+        navigator.id.completeAuthentication();
+      }
+    }
+
+    navigator.id.beginAuthentication(function(email) {
+      var token = getAccessToken(); // get token from url
+      if(token) {
+        //request email
+        var script = document.createElement('script');
+        script.src = 'https://graph.facebook.com/me?access_token=' + token + '&callback=onLoadJSONP';
+        document.getElementsByTagName('head')[0].appendChild(script);
+      }
+      else {
+        //request sign in from fb
+        location.href="https://www.facebook.com/dialog/oauth?display=popup&response_type=token&scope=email&client_id=359821740813622&redirect_uri=!{signinpage}";
+      }
+    });

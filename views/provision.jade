@@ -1,0 +1,46 @@
+extends layout
+
+block content
+  script(src="https://login.persona.org/provisioning_api.js")
+  script(src="/js/jquery-1.10.2.min.js")
+  script.
+    // alert('seeing if signed in!');
+    function generateServerSide(email, pubkey, certDur, callback) {
+      // here check the login status of this email
+      var data = JSON.stringify({
+        duration : certDur,
+        pubkey : pubkey,
+        email : email
+      });
+
+      $.ajax( {
+        url: 'https://ryanseys.com/certify',
+        type: 'post',
+        data: data,
+        headers: {
+          "Content-Type": 'application/json; charset=utf-8'  //for object property name, use quoted notation shown in second
+        },
+        dataType: "json",
+        success: function(returndata)
+        {
+          return callback(null); // Always fail login for now to force login screen
+          if(returndata.success)
+            return callback(returndata.certificate);
+          return callback(null);
+        }
+      });
+    }
+
+    navigator.id.beginProvisioning(function(email, certDuration) {
+      //always raise failure
+      navigator.id.genKeyPair(function(publicKey) {
+        generateServerSide(email, publicKey, certDuration, function (certificate) {
+          // generateServerSide something you would write.
+          // In this example, imagine it does an AJAX request to create a certificate,
+          // and then invokes a callback with that certificate.
+          navigator.id.raiseProvisioningFailure('user is not authenticated as target user');
+
+          //navigator.id.registerCertificate(certificate);
+        });
+      });
+    });
