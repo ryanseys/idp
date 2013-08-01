@@ -11,7 +11,7 @@ exports.signin = function(req, res) {
   if(req.body.access_token) {
     console.log('access_token: ' + req.body.access_token);
   }
-  res.render('signin', { title: "sign in", signinpage: "https://ryanseys.com/browserid/signin" });
+  res.render('signin', { title: "sign in", signinpage: "https://ryanseys.com/signin" });
 };
 
 exports.provision = function(req, res) {
