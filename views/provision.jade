@@ -4,6 +4,52 @@ block content
   script(src="https://login.persona.org/provisioning_api.js")
   script(src="/js/jquery-1.10.2.min.js")
   script.
+    window.fbAsyncInit = function() {
+      // init the FB JS SDK
+      FB.init({
+        appId      : '359821740813622',       // App ID from the app dashboard
+        channelUrl : '//ryanseys.com/provision', // Channel file for x-domain comms
+        status     : true,                    // Check Facebook Login status
+        xfbml      : true                     // Look for social plugins on the page
+      });
+
+      FB.getLoginStatus(function(response) {
+        if(response.status == "connected") {
+          FB.api('/me', function(response) {
+            navigator.id.beginProvisioning(function(email, certDuration) {
+              if(email == response.email) {
+                navigator.id.genKeyPair(function(publicKey) {
+                  generateServerSide(email, publicKey, certDuration, function (certificate) {
+                    if(certificate) {
+                      navigator.id.registerCertificate(certificate);
+                    }
+                    else {
+                      navigator.id.raiseProvisioningFailure('user is not authenticated as target user');
+                    }
+                  });
+                });
+              }
+              else {
+                navigator.id.raiseProvisioningFailure('user is not authenticated as target user');
+              }
+            });
+          });
+        }
+        else {
+          navigator.id.raiseProvisioningFailure('user is not authenticated as target user');
+        }
+      });
+    };
+
+    // Load the SDK asynchronously
+    (function(d, s, id){
+       var js, fjs = d.getElementsByTagName(s)[0];
+       if (d.getElementById(id)) {return;}
+       js = d.createElement(s); js.id = id;
+       js.src = "//connect.facebook.net/en_US/all.js";
+       fjs.parentNode.insertBefore(js, fjs);
+     }(document, 'script', 'facebook-jssdk'));
+
     // alert('seeing if signed in!');
     function generateServerSide(email, pubkey, certDur, callback) {
       // here check the login status of this email
@@ -21,26 +67,13 @@ block content
           "Content-Type": 'application/json; charset=utf-8'  //for object property name, use quoted notation shown in second
         },
         dataType: "json",
-        success: function(returndata)
-        {
-          return callback(null); // Always fail login for now to force login screen
-          if(returndata.success)
+        success: function(returndata) {
+          if(returndata.success) {
             return callback(returndata.certificate);
-          return callback(null);
+          }
+          else {
+            return callback(null);
+          }
         }
       });
     }
-
-    navigator.id.beginProvisioning(function(email, certDuration) {
-      //always raise failure
-      navigator.id.genKeyPair(function(publicKey) {
-        generateServerSide(email, publicKey, certDuration, function (certificate) {
-          // generateServerSide something you would write.
-          // In this example, imagine it does an AJAX request to create a certificate,
-          // and then invokes a callback with that certificate.
-          navigator.id.raiseProvisioningFailure('user is not authenticated as target user');
-
-          //navigator.id.registerCertificate(certificate);
-        });
-      });
-    });

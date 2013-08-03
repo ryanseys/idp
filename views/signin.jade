@@ -2,32 +2,70 @@ extends layout
 
 block content
   script(src="https://login.persona.org/authentication_api.js")
+  script(src="/js/jquery-1.10.2.min.js")
+  div(id="fb-root")
   script.
-    function getAccessToken() {
+    var email_from_persona = null;
+    function getEmailFromURL() {
       try {
-        return location.href.match(/access_token=(\S*)&/)[1];
+        return location.href.match(/email=(\S*)&/)[1];
       }
       catch(err) {
         return null;
       }
     }
 
-    function onLoadJSONP(j) {
-      if(j.email == email) {
-        navigator.id.completeAuthentication();
-      }
+    function failAuth(msg) {
+      navigator.id.raiseAuthenticationFailure(msg);
     }
 
-    navigator.id.beginAuthentication(function(email) {
-      var token = getAccessToken(); // get token from url
-      if(token) {
-        //request email
-        var script = document.createElement('script');
-        script.src = 'https://graph.facebook.com/me?access_token=' + token + '&callback=onLoadJSONP';
-        document.getElementsByTagName('head')[0].appendChild(script);
-      }
-      else {
-        //request sign in from fb
-        location.href="https://www.facebook.com/dialog/oauth?display=popup&response_type=token&scope=email&client_id=359821740813622&redirect_uri=!{signinpage}";
-      }
-    });
+    function errorURL() {
+      return (location.href.indexOf("access_denied") != -1) ||
+             (location.href.indexOf("error_code") != -1);
+    }
+
+    function getFBAuthURL() {
+      return "https://www.facebook.com/dialog/oauth?" +
+             "display=popup" +
+             "&response_type=token" +
+             "&scope=email" +
+             "&client_id=359821740813622" +
+             "&redirect_uri=!{signinpage}" +
+             "email=" + email_from_persona;
+    }
+
+    window.fbAsyncInit = function() {
+      // init the FB JS SDK
+      FB.init({
+        appId      : '359821740813622',       // App ID from the app dashboard
+        channelUrl : '//ryanseys.com/signin', // Channel file for x-domain comms
+        status     : true,                    // Check Facebook Login status
+        xfbml      : true                     // Look for social plugins on the page
+      });
+
+      navigator.id.beginAuthentication(function(email) {
+        email_from_persona = email;
+        if(!email_from_persona) {
+          email_from_persona = getEmailFromURL();
+        }
+        FB.getLoginStatus(function(response) {
+          if(response.status == "connected") {
+            if(response.email == email_from_persona) navigator.id.completeAuthentication();
+            else failAuth('incorrect email');
+          }
+          else {
+            if(!errorURL()) location.href = getFBAuthURL();
+            else failAuth('error');
+          }
+        });
+      });
+    };
+
+    // Load the SDK asynchronously
+    (function(d, s, id){
+       var js, fjs = d.getElementsByTagName(s)[0];
+       if (d.getElementById(id)) {return;}
+       js = d.createElement(s); js.id = id;
+       js.src = "//connect.facebook.net/en_US/all.js";
+       fjs.parentNode.insertBefore(js, fjs);
+     }(document, 'script', 'facebook-jssdk'));

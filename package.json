@@ -7,9 +7,14 @@
   },
   "dependencies": {
     "express": "3.3.4",
-    "jade": "*"
-  },
-  "scripts": {
-    "start": "node app.js"
+    "jade": "*",
+    "request": "~2.25.0",
+"compute-cluster": "0.0.7",
+    "convict": "0.0.6",
+    "cjson": "0.0.6",
+    "jwcrypto": "0.4.3",
+    "optimist": "0.3.4",
+    "temp": "0.4.0",
+    "winston": "0.5.11"
   }
 }
