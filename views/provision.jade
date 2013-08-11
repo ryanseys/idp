@@ -1,8 +1,7 @@
 extends layout
 
 block content
-  script(src="https://login.persona.org/provisioning_api.js")
-  script(src="/js/jquery-1.10.2.min.js")
+  script(src="http://127.0.0.1:10002/provisioning_api.js")
   script.
     window.fbAsyncInit = function() {
       // init the FB JS SDK
@@ -17,7 +16,7 @@ block content
         if(response.status == "connected") {
           FB.api('/me', function(response) {
             navigator.id.beginProvisioning(function(email, certDuration) {
-              if(email == response.email) {
+              if(email == (response.username + "@facebook.com")) {
                 navigator.id.genKeyPair(function(publicKey) {
                   generateServerSide(email, publicKey, certDuration, function (certificate) {
                     if(certificate) {
@@ -60,7 +59,7 @@ block content
       });
 
       $.ajax( {
-        url: 'https://ryanseys.com/certify',
+        url: '/certify',
         type: 'post',
         data: data,
         headers: {

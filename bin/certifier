@@ -9,17 +9,12 @@ const path = require('path');
 // ./ is our current working directory
 process.chdir(path.dirname(__dirname));
 
-require('../lib/logging-config.js');
+const express = require('express'),
+      config  = require('../lib/config.js'),
+      certify = require('../lib/cert-compute.js'),
+      keys    = require('../lib/keys');
 
-const 
-express = require('express'),
-config = require('../lib/config.js'),
-certify = require('../lib/cert-compute.js'),
-keys = require('../lib/keys');
-
-var server = express.createServer(
-  express.bodyParser()
-);
+var server = express.createServer(express.bodyParser());
 
 server.post('/cert_key', function(req, res) {
   // validate optional 'duration' parameter

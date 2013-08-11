@@ -1,7 +1,7 @@
 {
   "ip": "127.0.0.1",
   "port": 9999,
-  "issuer_hostname": "ryanseys.com",
-  "pub_key_path": "/home/ryanseys/keys/key.publickey",
-  "priv_key_path": "/home/ryanseys/keys/key.secretkey"
+  "issuer_hostname": "facebook.com",
+  "pub_key_path": "../secrets/public.key",
+  "priv_key_path": "../secrets/private.key"
 }

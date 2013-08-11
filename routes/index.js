@@ -4,13 +4,23 @@ const request = require('request'),
       keys = require('../lib/keys');
 
 exports.index = function(req, res){
-  res.render('index', { title: 'IDP' });
+  res.send('IDP is up!');
+};
+
+exports.well_known = function(req, res) {
+  keys(function(pubKey) {
+    res.json({
+      "public-key": JSON.parse(pubKey),
+      "authentication": "/signin",
+      "provisioning": "/provision"
+    });
+  });
 };
 
 exports.signin_post = function(req, res) {
   var token = req.body.token;
   if(token) {
-    console.log('trying token: ' + token)
+    console.log('trying token: ' + token);
     request(
       'https://graph.facebook.com/me?access_token=' + token,
       function (error, response, body) {
